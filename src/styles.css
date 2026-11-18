@@ -1,0 +1,863 @@
+﻿/* ---------- Tokens ---------- */
+:root {
+  --tomato: #d4301c;
+  --flame: #f29a1f;
+  --flour: #f5f1e8;
+  --ink: #1f1b18;
+  --font: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* light from the top left: shadows fall to the bottom right */
+  --shadow-soft: drop-shadow(4px 7px 8px rgb(31 27 24 / 0.28));
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-weight: 500;
+  color: var(--ink);
+  background: #b9b9b6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--tomato);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ---------- Logo ---------- */
+.logo {
+  display: inline-block;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--tomato);
+  font-size: 1em;
+  white-space: nowrap;
+}
+.logo--sm {
+  font-size: 30px;
+}
+.logo--lg {
+  font-size: clamp(40px, 6.4vh, 64px);
+}
+.logo--xl {
+  font-size: clamp(64px, 14vw, 140px);
+}
+.logo__c {
+  position: relative;
+  display: inline-block;
+}
+.logo__flame {
+  position: absolute;
+  left: 50%;
+  top: -0.12em;
+  width: 0.31em;
+  height: 0.39em;
+  transform: translateX(-50%);
+}
+
+/* ---------- Loader ---------- */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 200; /* above the site header */
+  display: grid;
+  place-items: center;
+  background: var(--flour);
+}
+
+/* ---------- Desktop stage: one screen, no scroll ----------
+   The page is: compact header + stage + thin footer strip, which together
+   are exactly the window height, so nothing scrolls and nothing overlaps. */
+.stage {
+  position: relative;
+  height: calc(100vh - var(--header-h) - var(--strip-h));
+  height: calc(100dvh - var(--header-h) - var(--strip-h));
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(280px, 31vw) minmax(0, 1fr) minmax(270px, 25vw);
+  column-gap: 1.6vw;
+  padding: 2.4vh 2.6vw 2vh;
+  background-color: #bdbdba;
+  background-size: cover;
+  background-position: center;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vh;
+  flex: none;
+}
+.brand__slogan {
+  margin: 0;
+  font-size: clamp(13px, 1.9vh, 17px);
+  letter-spacing: 0.01em;
+}
+
+.backlink {
+  align-self: flex-start;
+  margin: 0 0 1.2vh;
+  font-weight: 800;
+  font-size: clamp(13px, 1.8vh, 15px);
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  flex: none;
+}
+.backlink:hover {
+  border-bottom-color: var(--tomato);
+}
+.backlink[data-hidden="true"] {
+  pointer-events: none;
+}
+
+.headline {
+  margin: 0 0 1.4vh;
+  font-size: clamp(30px, 5.4vh, 56px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  flex: none;
+}
+
+.bowls {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: 0.8vh 1.2vw;
+}
+
+.bowl {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.bowl {
+  /* we handle the drag ourselves; mobile re-enables horizontal scrolling below */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.bowl:hover {
+  transform: translateY(-3px);
+}
+.bowl__check {
+  position: absolute;
+  top: 0;
+  right: 6%;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--tomato);
+  color: var(--flour);
+  box-shadow: 0 2px 5px rgb(31 27 24 / 0.35);
+  pointer-events: none;
+}
+.bowl__check svg {
+  width: 16px;
+  height: 16px;
+}
+
+.drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 200;
+  pointer-events: none;
+  will-change: transform;
+  filter: drop-shadow(6px 10px 8px rgb(31 27 24 / 0.35));
+}
+.drag-ghost img {
+  position: absolute;
+  height: auto;
+}
+.bowl:active {
+  transform: scale(0.97);
+}
+.bowl__img {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  object-fit: contain;
+  filter: var(--shadow-soft);
+}
+.bowl__name {
+  margin-top: 0.4vh;
+  font-weight: 800;
+  font-size: clamp(12px, 1.8vh, 16px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.bowl__price {
+  font-size: clamp(11px, 1.6vh, 14px);
+  opacity: 0.8;
+}
+
+/* ---------- Centre: open box with the pizza ---------- */
+.center {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+}
+.box {
+  position: relative;
+  width: min(100%, 86vh);
+  aspect-ratio: 939 / 934;
+}
+.box__img {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(8px 14px 14px rgb(31 27 24 / 0.32));
+}
+.pizza {
+  position: absolute;
+  left: 50.3%;
+  top: 52.6%;
+  width: 75%;
+  aspect-ratio: 985 / 995;
+  transform: translate(-50%, -50%);
+}
+.pizza__img {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(3px 6px 6px rgb(31 27 24 / 0.3));
+}
+
+/* drop hint while a bowl is dragged: only opacity changes */
+.pizza__ring {
+  position: absolute;
+  inset: -2.5%;
+  border-radius: 50%;
+  border: 3px dashed var(--flour);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.pizza__ring[data-on="true"] {
+  opacity: 0.75;
+}
+.pizza__ring--over {
+  border: 4px solid var(--tomato);
+  inset: -3%;
+}
+.pizza__ring--over[data-on="true"] {
+  opacity: 0.95;
+}
+
+/* oven: baked picture and glow sit on top of the raw pizza */
+.pizza__img--baked {
+  position: absolute;
+  inset: 0;
+}
+.pizza__glow {
+  position: absolute;
+  inset: 2%;
+  z-index: 20; /* above every topping layer */
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(242 154 31 / 0.55) 0%, rgb(242 154 31 / 0.3) 55%, rgb(242 154 31 / 0) 74%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* toppings sit on the pizza; z-index per ingredient layer */
+.toppings {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  pointer-events: none;
+}
+.topping {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+.topping__motion {
+  /* soft shadow, light from the top left, never rotates with the piece */
+  filter: drop-shadow(2px 3px 3px rgb(31 27 24 / 0.38));
+  /* no permanent will-change: 55 promoted layers would hurt phones */
+}
+.topping__stack {
+  position: relative;
+}
+.topping__motion img {
+  width: 100%;
+  height: auto;
+}
+.topping__motion img.topping__baked {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+
+/* ---------- Box lid, sticker ---------- */
+.box {
+  container-type: inline-size; /* lid text scales with the box (cqw) */
+}
+.lid {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+}
+.lid__img {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(8px 14px 14px rgb(31 27 24 / 0.32));
+}
+.lid__brand {
+  position: absolute;
+  left: 49%;
+  top: 47%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.2cqw;
+}
+.lid__mark {
+  width: 22cqw;
+  height: auto;
+}
+.lid__logo {
+  font-size: 11cqw;
+}
+.sticker {
+  position: absolute;
+  right: 11%;
+  bottom: 11%;
+  margin: 0;
+  padding: 1.8cqw 3cqw;
+  max-width: 26cqw;
+  border-radius: 2.4cqw;
+  background: var(--flour);
+  color: var(--tomato);
+  font-weight: 800;
+  font-size: 3.6cqw;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  text-align: center;
+  box-shadow:
+    0 0 0 0.45cqw var(--flour),
+    0 0 0 0.9cqw var(--tomato),
+    2px 5px 10px rgb(31 27 24 / 0.3);
+}
+
+/* ---------- Oven timer (left column while baking) ---------- */
+.fade-out {
+  transition: opacity 0.4s ease;
+}
+.fade-out[data-hidden="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+.left {
+  position: relative;
+}
+.oven-timer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 22%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1vh;
+  text-align: center;
+}
+.oven-timer__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.oven-timer__img {
+  width: min(62%, 30vh);
+  height: auto;
+  filter: drop-shadow(5px 9px 9px rgb(31 27 24 / 0.32));
+}
+.oven-timer__label {
+  margin: 1vh 0 0;
+  font-weight: 800;
+  font-size: clamp(24px, 4.2vh, 40px);
+  letter-spacing: -0.03em;
+}
+.oven-timer__time {
+  margin: 0;
+  font-weight: 800;
+  font-size: clamp(36px, 7vh, 68px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--tomato);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Done card ---------- */
+.right__slot {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+}
+.receipt--done {
+  text-align: center;
+}
+.receipt--done .receipt__head {
+  align-items: center;
+  border-bottom: 2px dashed rgb(31 27 24 / 0.28);
+}
+.done__title {
+  margin: clamp(10px, 2vh, 20px) 0 clamp(6px, 1vh, 10px);
+  font-weight: 800;
+  font-size: clamp(32px, 5.4vh, 52px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--tomato);
+}
+.done__amount {
+  font-size: clamp(22px, 3.2vh, 30px);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  text-transform: none;
+}
+.receipt--done .receipt__total {
+  padding-bottom: 4px;
+}
+.receipt--done .cta {
+  margin-top: clamp(10px, 1.8vh, 16px);
+}
+
+/* ---------- Receipt ---------- */
+.right {
+  display: grid;
+  /* anchored at the top so the receipt only grows downwards as rows appear */
+  align-items: start;
+  justify-items: center;
+  padding-top: 5vh;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  z-index: 2; /* the receipt lies on top of the towel on short screens */
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.receipt {
+  width: min(100%, 340px);
+  padding: clamp(14px, 2.4vh, 22px) 24px clamp(14px, 2.4vh, 24px);
+  background: var(--flour);
+  transform: rotate(1.6deg);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.6) inset,
+    3px 6px 14px rgb(31 27 24 / 0.22),
+    10px 18px 30px rgb(31 27 24 / 0.18);
+  border-radius: 3px;
+}
+.receipt__head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding-bottom: 14px;
+  border-bottom: 2px dashed rgb(31 27 24 / 0.28);
+}
+.receipt__title {
+  margin: 0;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.receipt__rows {
+  position: relative; /* anchor for rows leaving with popLayout */
+  list-style: none;
+  margin: 0;
+  padding: clamp(8px, 1.4vh, 14px) 0;
+}
+.receipt__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: clamp(2px, 0.5vh, 5px) 0;
+  font-size: clamp(13px, 1.7vh, 15px);
+}
+.receipt__row span:last-child {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.receipt__foot {
+  border-top: 2px dashed rgb(31 27 24 / 0.28);
+  padding-top: clamp(8px, 1.4vh, 14px);
+}
+
+.receipt__delivery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.choice {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+.choice input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.choice__box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: clamp(5px, 0.9vh, 8px) 6px;
+  border: 2px solid rgb(31 27 24 / 0.22);
+  border-radius: 10px;
+  line-height: 1.15;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.choice__label {
+  font-weight: 800;
+  font-size: clamp(13px, 1.7vh, 15px);
+}
+.choice__sub {
+  font-size: clamp(10px, 1.4vh, 12px);
+  opacity: 0.7;
+}
+.choice input:checked + .choice__box {
+  border-color: var(--tomato);
+  background: rgb(212 48 28 / 0.09);
+}
+.choice input:focus-visible + .choice__box {
+  outline: 3px solid var(--tomato);
+  outline-offset: 2px;
+}
+
+.receipt__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: clamp(8px, 1.4vh, 14px);
+  font-weight: 800;
+  font-size: clamp(16px, 2.2vh, 20px);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.receipt__amount {
+  position: relative;
+  display: inline-block;
+  min-width: 5.5em;
+  height: 1.2em;
+  text-align: right;
+  font-size: clamp(22px, 3.2vh, 30px);
+  letter-spacing: -0.02em;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+}
+.receipt__amount-inner {
+  position: absolute;
+  right: 0;
+  top: 0;
+  white-space: nowrap;
+  transform-origin: right center;
+}
+
+.receipt__end {
+  margin-top: clamp(10px, 1.8vh, 16px);
+  text-align: center;
+}
+.receipt__barcode {
+  display: block;
+  width: 78%;
+  height: clamp(20px, 3.4vh, 30px);
+  margin: 0 auto;
+  color: var(--ink);
+  opacity: 0.8;
+}
+.receipt__thanks {
+  margin: 6px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  opacity: 0.7;
+}
+.receipt[data-locked="true"] {
+  opacity: 0.55;
+}
+
+.cta {
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tomato);
+  color: var(--flour);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 3px 0 rgb(31 27 24 / 0.35);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.cta:hover {
+  transform: translateY(-1px);
+}
+.cta:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgb(31 27 24 / 0.35);
+}
+
+/* ---------- Decoration & footer ---------- */
+.towel {
+  position: absolute;
+  right: -1.2vw;
+  bottom: -2.2vh;
+  width: clamp(110px, 13vw, 230px);
+  transform: rotate(-9deg);
+  filter: drop-shadow(5px 9px 9px rgb(31 27 24 / 0.3));
+  pointer-events: none;
+}
+
+.footer {
+  position: absolute;
+  left: 2.6vw;
+  bottom: 1.3vh;
+  max-width: 44vw;
+  font-size: 11px;
+  line-height: 1.3;
+  opacity: 0.75;
+}
+.footer a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+
+
+/* ---------- Narrow screens: pizza on top, swipeable bowls, receipt, sticky CTA ---------- */
+.bakebar {
+  display: none; /* only on narrow screens */
+}
+
+@media (max-width: 900px) {
+  .stage {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100dvh - var(--header-h));
+    overflow: visible;
+    padding: 14px 16px 24px;
+    gap: 12px;
+    background-position: center top;
+  }
+  .left {
+    display: contents; /* lets backlink, bowls, timer be ordered next to the other sections */
+  }
+  .backlink {
+    order: 1;
+    margin: 0;
+    font-size: 14px;
+  }
+  .center {
+    order: 2;
+    display: block;
+  }
+  .box {
+    width: min(100%, 64vh);
+    margin: 0 auto;
+  }
+  .headline {
+    order: 3;
+    margin: 2px 0 -6px;
+    font-size: 26px;
+  }
+  .bowls {
+    order: 4;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -16px;
+    padding: 6px 16px 10px;
+    scrollbar-width: none;
+  }
+  .bowls::-webkit-scrollbar {
+    display: none;
+  }
+  .bowl {
+    flex: 0 0 clamp(100px, 27vw, 150px); /* the 4th bowl peeks in: hints at the swipe */
+    scroll-snap-align: start;
+    touch-action: pan-x; /* horizontal swipe scrolls the row, a vertical drag lifts the bowl */
+  }
+  .bowl__img {
+    flex: none;
+    width: 100%;
+    height: clamp(64px, 20vw, 96px);
+  }
+  .bowl__name {
+    font-size: 13px;
+  }
+  .bowl__price {
+    font-size: 12px;
+  }
+
+  /* while in the oven the bowls make room for the timer */
+  .stage:not([data-phase="build"]) .headline,
+  .stage:not([data-phase="build"]) .bowls {
+    display: none;
+  }
+  .oven-timer {
+    position: static;
+    order: 3;
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: center;
+    align-items: center;
+    column-gap: 5vw;
+    margin: 2px 0;
+  }
+  .oven-timer__img {
+    width: clamp(84px, 24vw, 130px);
+  }
+  .oven-timer__text {
+    align-items: flex-start;
+  }
+  .oven-timer__label {
+    font-size: 26px;
+    margin: 0;
+  }
+  .oven-timer__time {
+    font-size: 48px;
+  }
+
+  .right {
+    order: 5;
+    padding-top: 0;
+    z-index: auto;
+  }
+  .receipt {
+    width: 100%;
+    max-width: 440px;
+    transform: rotate(0.6deg);
+  }
+  .receipt .cta {
+    display: none; /* the sticky bar below replaces it */
+  }
+
+  .bakebar {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+    pointer-events: none;
+  }
+  .bakebar .cta {
+    display: block;
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+    pointer-events: auto;
+    box-shadow:
+      0 3px 0 rgb(31 27 24 / 0.35),
+      0 8px 22px rgb(31 27 24 / 0.35);
+  }
+
+  .towel {
+    display: none;
+  }
+  .footer {
+    position: static;
+    max-width: none;
+    order: 6;
+  }
+}
+
+/* no sticky hover on touch screens */
+@media (hover: none) {
+  .bowl:hover,
+  .cta:hover {
+    transform: none;
+  }
+}
+
+/* ---------- Reduced motion: keep only simple fades ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .bowl,
+  .cta,
+  .choice__box {
+    transition: none;
+  }
+  .bowl:hover,
+  .bowl:active,
+  .cta:hover,
+  .cta:active {
+    transform: none;
+  }
+  .fade-out,
+  .pizza__ring {
+    transition-duration: 0.15s;
+  }
+}

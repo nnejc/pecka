@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="sl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Pečka — picerija s krušno pečjo</title>
+    <meta
+      name="description"
+      content="Pečka je picerija s krušno pečjo. Testo zori 48 ur, ti izbereš, kaj gre nanj. Poglej ponudbo ali sestavi svojo pico. Demo koncept."
+    />
+    <meta name="theme-color" content="#D4301C" />
+    <!-- the demo phone number is not real: stop phones from turning it into a link -->
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- sharing: VITE_SITE_URL is the public address of the site (set in .env or by the deploy workflow) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="sl_SI" />
+    <meta property="og:title" content="Pečka — picerija s krušno pečjo" />
+    <meta
+      property="og:description"
+      content="Iz tvojih rok v našo peč. Testo zori 48 ur, ti izbereš, kaj gre nanj."
+    />
+    <meta property="og:image" content="%VITE_SITE_URL%img/hero.webp" />
+    <meta property="og:image:alt" content="Pica na lopatici pred krušno pečjo z ognjem" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="%VITE_SITE_URL%img/hero.webp" />
+
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&display=block"
+      rel="stylesheet"
+    />
+    <!-- the hero is the first thing people see -->
+    <link rel="preload" as="image" href="/img/hero.webp" type="image/webp" fetchpriority="high" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Za ogled strani potrebuješ vklopljen JavaScript.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
